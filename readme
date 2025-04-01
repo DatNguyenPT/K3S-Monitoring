@@ -1,4 +1,80 @@
-VM IP:
-- Master: 54.226.88.143 (public) - 10.0.0.15 (private) 
-- Worker1: 98.83.80.134 (public) - 10.0.0.74 (private)
-- Worker2: 34.203.99.250 (public) - 10.0.0.126 (private)
+# Kubernetes Infrastructure Project
+
+This repository contains configuration files and scripts for setting up a complete Kubernetes infrastructure with monitoring, logging, and deployment tools.
+
+## Project Structure
+
+### Monitoring Stack
+- **Prometheus/** - Prometheus monitoring system configuration
+- **Grafana/** - Grafana dashboards and configuration
+  - Contains Grafana Enterprise v11.3.0 for ARM64
+- **cadvisor/** - Container monitoring solution
+  - `cadvisor-deployment.yaml` - Deployment configuration for cAdvisor
+
+### Alerting System
+- **alert/** - Alerting configuration
+  - `alert-rules.yaml` - Alert rules definitions
+  - `alertmanager-config.yaml` - AlertManager configuration
+  - `alertmanager-deployment.yaml` - AlertManager deployment specs
+  - `alertmanager.yaml` - AlertManager main configuration
+
+### Load Balancing & Ingress
+- **metallb/** - MetalLB configuration for bare metal load balancing
+  - `ip_pool.yaml` - IP address pool configuration
+- **nginx/** - NGINX configuration files
+- **nginx-ingress/** - NGINX Ingress Controller configuration
+
+### Automation Scripts
+- **BashScript/** - Cluster setup automation scripts
+  - `MasterAccount.sh` - Master node account setup
+  - `MasterSetup.sh` - Master node configuration
+  - `Worker1Account.sh` - Worker node 1 account setup
+  - `Worker2Account.sh` - Worker node 2 account setup
+  - `WorkerSetup.sh` - Worker nodes configuration
+
+### Application Deployment
+- **webapp/** - Web application deployment files
+
+### Infrastructure as Code
+- **Terraform/** - Infrastructure as Code configurations
+
+### Additional Tools
+- **Python Script/** - Utility Python scripts
+
+## Getting Started
+
+1. Set up the master node:
+```bash
+cd BashScript
+./MasterAccount.sh
+./MasterSetup.sh
+```
+
+2. Set up worker nodes:
+```bash
+cd BashScript
+./Worker1Account.sh  # For first worker node
+./Worker2Account.sh  # For second worker node
+./WorkerSetup.sh
+```
+
+3. Deploy monitoring stack:
+- Deploy Prometheus using configurations in `Prometheus/`
+- Install Grafana using the provided `.deb` package
+- Configure AlertManager using files in `alert/`
+
+4. Set up load balancing:
+- Apply MetalLB configurations from `metallb/`
+- Configure NGINX Ingress Controller
+
+## Prerequisites
+- Kubernetes cluster
+- kubectl CLI tool
+- Terraform (for IaC deployments)
+- Python 3.x (for utility scripts)
+
+## Contributing
+Please read our contributing guidelines before submitting pull requests.
+
+## License
+[Add your license information here]
