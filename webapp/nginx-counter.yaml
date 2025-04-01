@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-counter
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nginx-counter
+  template:
+    metadata:
+      labels:
+        app: nginx-counter
+    spec:
+      containers:
+      - name: nginx
+        image: nginx
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: nginx-config
+          mountPath: /etc/nginx/conf.d
+      - name: nginx-prometheus-exporter
+        image: nginx/nginx-prometheus-exporter:latest
+        ports:
+        - containerPort: 9113
+        args:
+        - -nginx.scrape-uri=http://192.168.10.201/status  # Thay đổi localhost thành địa chỉ IP của Nginx
+        env:
+        - name: NGINX_STATUS
+          value: "http://192.168.10.201/status"  # Thay đổi thành http://nginx:80/status
+      volumes:
+      - name: nginx-config
+        configMap:
+          name: nginx-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-counter
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 80
+  selector:
+    app: nginx-counter
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config
+data:
+  default.conf: |
+    server {
+        listen 80;
+        
+        location / {
+            add_header Content-Type text/plain;
+            return 200 "Hello World\n";
+        }
+
+        location /counter {
+            access_log /var/log/nginx/counter.log;
+            return 200 "Request counted!\n";
+        }
+
+        location /status {
+            stub_status on;
+            allow all;  # Cho phép tất cả các IP truy cập
+            deny 192.168.1.0/24;  # Chặn một dải IP (nếu cần)
+        }
+    }

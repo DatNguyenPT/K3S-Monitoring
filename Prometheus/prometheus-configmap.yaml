@@ -1,0 +1,65 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  namespace: monitoring
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 15s  # Thời gian giữa các lần scrape
+
+    alerting:
+      alertmanagers:
+        - static_configs:
+            - targets: ['10.43.238.72:9093']  # Địa chỉ của Alertmanager
+
+    scrape_configs:
+      # Scrape các metrics từ các node trong Kubernetes
+      - job_name: 'k3s-nodes'
+        kubernetes_sd_configs:
+          - role: node  # Phát hiện các node trong Kubernetes
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_node_name]
+            target_label: node
+
+      # Scrape các metrics từ các pod Node Exporter
+      - job_name: 'node-exporter'
+        kubernetes_sd_configs:
+          - role: pod  # Phát hiện các pod (Node Exporter)
+            namespaces:
+              names: ['monitoring']  # Namespace mà bạn đã triển khai Node Exporter
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_label_app]
+            target_label: app
+          - source_labels: [__meta_kubernetes_pod_name]
+            target_label: pod
+          - source_labels: [__meta_kubernetes_pod_ip]
+            target_label: instance
+          - source_labels: [__meta_kubernetes_namespace]
+            target_label: namespace
+
+      # Scrape các metrics từ các pod Prometheus (nếu cần thiết)
+      - job_name: 'prometheus'
+        kubernetes_sd_configs:
+          - role: pod  # Phát hiện các pod Prometheus
+            namespaces:
+              names: ['monitoring']  # Namespace của Prometheus
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_label_app]
+            target_label: app
+          - source_labels: [__meta_kubernetes_pod_name]
+            target_label: pod
+          - source_labels: [__meta_kubernetes_pod_ip]
+            target_label: instance
+
+      # Scrape các metrics từ Kubernetes API server (nếu cần thiết)
+      - job_name: 'kubernetes-apiserver'
+        kubernetes_sd_configs:
+          - role: service  # Phát hiện các API server endpoint thông qua service
+            namespaces:
+              names: ['kube-system']  # Namespace mà Kubernetes API server đang chạy
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_service_name]
+            target_label: service
+          - source_labels: [__meta_kubernetes_service_port_name]
+            target_label: port

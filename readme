@@ -1,0 +1,4 @@
+VM IP:
+- Master: 54.226.88.143 (public) - 10.0.0.15 (private) 
+- Worker1: 98.83.80.134 (public) - 10.0.0.74 (private)
+- Worker2: 34.203.99.250 (public) - 10.0.0.126 (private)
